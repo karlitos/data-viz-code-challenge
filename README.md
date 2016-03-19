@@ -48,4 +48,8 @@ There are basically two method of using d3 to plot SVG artefacts on top of a Lea
 1. Appending a new SVG element on Leaflet's "overlay pane"
 2. Implementing a custom vector tile layer that hooks in to Leaflets native tile layer ecosystem
 
-I decided to go with the second solution, because it would me allow to work more D3-centric without the necessity of proper conversion of the provided data to GeoJSON. In this case one has to take care about the zooming and translation effects personally, but this would also allow more flexibility in the implementation of the visualization. 
+I decided to go with the second solution, because it would me allow to work more D3-centric without the necessity of proper conversion of the provided data to GeoJSON. In this case one has to take care about the zooming and translation effects personally, but this would also allow more flexibility in the implementation of the visualization.
+
+Very good lecture on the different approaches offers [this dicsuccion][Achieving animated zoom with d3 and Leaflet]
+
+[Achieving animated zoom with d3 and Leaflet]: http://www.unknownerror.org/opensource/Leaflet/Leaflet/q/stackoverflow/21216347/achieving-animated-zoom-with-d3-and-leaflet
