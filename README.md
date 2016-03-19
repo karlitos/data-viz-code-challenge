@@ -39,3 +39,13 @@ Imagine you are a Software Developer at ally and you are presented that data. Yo
     Please submit your solutions in a form of publicly accessible git repository. Please make sure to submit the full git commit history with the project. We will clone it and evaluate your work so. Please include instructions for testing and running your code.
 
     Alternatively, you can submit a zip archive of your project via email.
+
+# Notes on the solution
+
+I decided to use _LeafletJs_ for the visualization of the underlaying map.One reason for this decision was, that no API key was needed  compared to the _Mapbox_ which either built upon the _Leaflet_ library. There were also some good examples of connecting _D3_ with _Leaflet_.
+
+There are basically two method of using d3 to plot SVG artefacts on top of a Leaflet map:
+1. Appending a new SVG element on Leaflet's "overlay pane"
+2. Implementing a custom vector tile layer that hooks in to Leaflets native tile layer ecosystem
+
+I decided to go with the second solution, because it would me allow to work more D3-centric without the necessity of proper conversion of the provided data to GeoJSON. In this case one has to take care about the zooming and translation effects personally, but this would also allow more flexibility in the implementation of the visualization. 
