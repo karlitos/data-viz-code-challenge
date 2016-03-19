@@ -6,6 +6,8 @@ var destintionColor = d3.rgb(24, 0, 134);
 var destinationOpacity = originOpacity;
 var destinationStrokeColor = originStrokeColor;
 var connectionStrokeOpacity = .2;
+/* Define date format globally since it will be used for parsing and formating on different places */
+var dateTimeFormat = d3.time.format('%Y-%m-%d %H:%M:%S');
 
 
 // var layerUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -52,13 +54,16 @@ L.tileLayer(layerUrl, {
   .attr('stop-color', destintionColor)
   .attr('stop-opacity', 1);
 
+  // Define the div for the tooltip
+  var div = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
   /* Grouping of all the SVG Elements representing the connections*/
   var g = svg.append('g');
 
   var searches = [];
   d3.csv('data/searches.csv', function(d) {
-    // define date format
-    var dateFormat = d3.time.format('%Y-%m-%d %H:%M:%S');
     function parseCoordinates(coordinates){
       // pasre the input string and convert it into array
       coordinates = coordinates.match(/-?\d+\.\d+/g);
@@ -67,7 +72,7 @@ L.tileLayer(layerUrl, {
     }
 
     return {
-      at: dateFormat.parse(d.at), // convert the timestamp to date
+      at: dateTimeFormat.parse(d.at), // convert the timestamp to date
       origin: parseCoordinates(d.origin),
       destination: parseCoordinates(d.destination),
     };
@@ -75,26 +80,29 @@ L.tileLayer(layerUrl, {
     searches = rows;
     console.log('searches', searches);
 
+    /* The data selection used for further data binding */
     var selection = g.selectAll('circle')
     .data(searches, function(d){return d.at;})
     .enter();
 
+    /* The graphical elements visualizing the origins */
     var origins = selection.append('circle')
     .style('stroke', originStrokeColor)
     .style('opacity', originOpacity)
     .style('fill', originColor)
     .attr('id', function(d, i) { return 'origin' + i; });
 
+    /* The graphical elements visualizing the destinastions */
     var destinations = selection.append('circle')
     .style('stroke', destinationStrokeColor)
     .style('opacity', destinationOpacity)
     .style('fill', destintionColor)
     .attr('id', function(d, i) { return 'destination' + i; });
 
+    /* The graphical elements visualizing the connections */
     var connections = selection.append('line')
     .style('stroke', "url(#connectionGradient)")
     .style('stroke-opacity', connectionStrokeOpacity)
-    // .style('stroke-width', 2)
     .attr('x1', function (d) { return map.latLngToLayerPoint(d.origin).x; })
     .attr('y1', function (d) { return map.latLngToLayerPoint(d.origin).y; })
     .attr('x2', function (d) { return map.latLngToLayerPoint(d.destination).x; })
@@ -102,11 +110,21 @@ L.tileLayer(layerUrl, {
     .attr('id', function(d, i) { return 'connection' + i; })
     .on('mouseover', function(d) {
       d3.select(this).style('stroke-opacity', 1);
+      div.transition()
+        .duration(100)
+        .style('opacity', .9);
+      div.html(dateTimeFormat(d.at))
+        .style('left', (d3.event.pageX) + 'px')
+        .style('top', (d3.event.pageY - 30) + 'px');
     })
     .on('mouseout', function(d) {
       d3.select(this).style('stroke-opacity', connectionStrokeOpacity);
+      div.transition()
+        .duration(100)
+        .style('opacity', 0);
     });
 
+    /* The update function taking care of placing and resizing of the overlayed elements*/
     function update() {
       origins.attr('cx',function(d) { return map.latLngToLayerPoint(d.origin).x; });
       origins.attr('cy',function(d) { return map.latLngToLayerPoint(d.origin).y; });
