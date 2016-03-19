@@ -52,4 +52,10 @@ I decided to go with the second solution, because it would me allow to work more
 
 Very good lecture on the different approaches offers [this dicsuccion][Achieving animated zoom with d3 and Leaflet]
 
+## Visualization
+The origin- and destination-points of the searches are displayed as circles of different colors, so it can be distinguished which one of them it is. The coordinates are connected with a line, the line has a color gradient respective to the colors of the origin/destination.
+
+The size of the circles and the stroke-width of the lines changes also accordingly to the zoom-level of the map. Different size-computations are used for zoom-level greater/lower zoom-level 12 for better visibility. Of course one could use different size computation methods for every zoom level, this would require some testing to get a feeling how the circles/lines looks like in different zoom-levels and sizes.
+
+
 [Achieving animated zoom with d3 and Leaflet]: http://www.unknownerror.org/opensource/Leaflet/Leaflet/q/stackoverflow/21216347/achieving-animated-zoom-with-d3-and-leaflet
