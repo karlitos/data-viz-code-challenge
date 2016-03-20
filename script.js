@@ -8,7 +8,7 @@ var originColor = d3.rgb(255, 145, 0),
   connectionStrokeOpacity = .2;
 /* Define date format globally since it will be used for parsing and formating on different places */
 var dateTimeFormat = d3.time.format('%Y-%m-%d %H:%M:%S');
-
+var initialZoomLevel = 12;
 
 // var layerUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 // var mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
@@ -20,7 +20,7 @@ var attribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenS
 // var layerUrl = 'http://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png';
 // var	attribution = '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 
-var map = new L.map('map').setView([52.5182, 13.4077], 12);
+var map = new L.map('map').setView([0, 0], initialZoomLevel);
 L.tileLayer(layerUrl, {
   attribution: attribution,
   maxZoom: 18,
@@ -34,25 +34,47 @@ map._initPathRoot()
 /* We simply pick up the SVG from the map object */
 var svg = d3.select('#map').select('svg');
 
-/* We define gradient color for the line*/
-var connectionGradient = svg.append('defs')
-.append('linearGradient')
-.attr('id', 'connectionGradient')
+/* Create the defs element storing all the gradient definitions*/
+var defs = svg.append('defs')
+
+/* We define gradient color for the lines runnig in top-down direction*/
+var topDownConnectionGradient = defs.append('linearGradient')
+.attr('id', 'topDownConnectionGradient')
 .attr('x1', '0%')
 .attr('y1', '0%')
-.attr('x2', '100%')
+.attr('x2', '0%')
 .attr('y2', '100%')
 .attr('spreadMethod', 'pad');
 
-connectionGradient.append('stop')
+topDownConnectionGradient.append('stop')
 .attr('offset', '0%')
 .attr('stop-color', originColor)
 .attr('stop-opacity', 1);
 
-connectionGradient.append('stop')
+topDownConnectionGradient.append('stop')
 .attr('offset', '100%')
 .attr('stop-color', destintionColor)
 .attr('stop-opacity', 1);
+
+/* Another gradient color for the oposite direction*/
+var downTopConnectionGradient = defs.append('linearGradient')
+.attr('id', 'downTopConnectionGradient')
+.attr('x1', '0%')
+.attr('y1', '100%')
+.attr('x2', '0%')
+.attr('y2', '0%')
+.attr('spreadMethod', 'pad');
+
+downTopConnectionGradient.append('stop')
+.attr('offset', '0%')
+.attr('stop-color', originColor)
+.attr('stop-opacity', 1);
+
+downTopConnectionGradient.append('stop')
+.attr('offset', '100%')
+.attr('stop-color', destintionColor)
+.attr('stop-opacity', 1);
+
 
 // Define the div for the tooltip
 var div = d3.select("body").append("div")
@@ -77,6 +99,22 @@ d3.csv('data/searches.csv', function(d) {
     destination: parseCoordinates(d.destination),
   };
 }, function(error, rows) {
+  // Set the map view pragmatically to the middle of all search coordinates
+  var minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, maxX = 0, maxY = 0;
+  rows.forEach(function (element, index, array) {
+    minX = minX > element.origin.lng ? element.origin.lng : minX;
+    minX = minX > element.destination.lng ? element.destination.lng : minX;
+    minY = minY > element.origin.lat ? element.origin.lat : minY;
+    minY = minY > element.destination.lat ? element.destination.lat : minY;
+
+    maxX = maxX < element.origin.lng ? element.origin.lng : maxX;
+    maxX = maxX < element.destination.lng ? element.destination.lng : maxX;
+    maxY = maxY < element.origin.lat ? element.origin.lat : maxY;
+    maxY = maxY < element.destination.lat ? element.destination.lat : maxY;
+  });
+
+  /* Update the map view to be centered to the middle of all searches*/
+  map.setView([(minY + maxY)/2, (minX + maxX)/2], initialZoomLevel)
   searches = rows;
 
   /* The graphical elements visualizing the origins */
@@ -113,7 +151,14 @@ d3.csv('data/searches.csv', function(d) {
 
     /* The graphical elements visualizing the connections */
     connections = selection.append('line')
-    .style('stroke', "url(#connectionGradient)")
+    .style('stroke', function(d){
+      // Use different gradients depending if the conneciton runs top-down or down-top
+      if(d.origin.lat < d.destination.lat){
+        return "url(#downTopConnectionGradient)";
+      } else {
+        return "url(#topDownConnectionGradient)";
+      };
+    })
     .style('stroke-opacity', connectionStrokeOpacity)
     .attr('x1', function (d) { return map.latLngToLayerPoint(d.origin).x; })
     .attr('y1', function (d) { return map.latLngToLayerPoint(d.origin).y; })
@@ -163,6 +208,8 @@ d3.csv('data/searches.csv', function(d) {
     });
   }
   map.on('viewreset', update);
+
+  /* Creating the time-scale visualization and the brush area */
 
   /* Noting few size-related parameters for easier computation */
   var timeEventsContainer = d3.select('#brush'),
@@ -263,6 +310,7 @@ d3.csv('data/searches.csv', function(d) {
     /* Update the map and the visualization*/
     update();
   }
+
   /* Calling the update function when everything else is set up*/
   update();
 });
