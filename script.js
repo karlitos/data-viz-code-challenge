@@ -78,51 +78,69 @@ d3.csv('data/searches.csv', function(d) {
   };
 }, function(error, rows) {
   searches = rows;
-  console.log('searches', searches);
-
-  /* The data selection used for further data binding */
-  var selection = g.selectAll('circle')
-  .data(searches, function(d){return d.at;})
-  .enter();
 
   /* The graphical elements visualizing the origins */
-  var origins = selection.append('circle')
-  .style('stroke', originStrokeColor)
-  .style('opacity', originOpacity)
-  .style('fill', originColor)
-  .attr('id', function(d, i) { return 'origin' + i; });
-
+  var origins = [];
   /* The graphical elements visualizing the destinastions */
-  var destinations = selection.append('circle')
-  .style('stroke', destinationStrokeColor)
-  .style('opacity', destinationOpacity)
-  .style('fill', destintionColor)
-  .attr('id', function(d, i) { return 'destination' + i; });
-
+  var destinations = [];
   /* The graphical elements visualizing the connections */
-  var connections = selection.append('line')
-  .style('stroke', "url(#connectionGradient)")
-  .style('stroke-opacity', connectionStrokeOpacity)
-  .attr('x1', function (d) { return map.latLngToLayerPoint(d.origin).x; })
-  .attr('y1', function (d) { return map.latLngToLayerPoint(d.origin).y; })
-  .attr('x2', function (d) { return map.latLngToLayerPoint(d.destination).x; })
-  .attr('y2', function (d) { return map.latLngToLayerPoint(d.destination).y; })
-  .attr('id', function(d, i) { return 'connection' + i; })
-  .on('mouseover', function(d) {
-    d3.select(this).style('stroke-opacity', 1);
-    div.transition()
-    .duration(100)
-    .style('opacity', .9);
-    div.html(dateTimeFormat(d.at))
-    .style('left', (d3.event.pageX) + 'px')
-    .style('top', (d3.event.pageY - 30) + 'px');
-  })
-  .on('mouseout', function(d) {
-    d3.select(this).style('stroke-opacity', connectionStrokeOpacity);
-    div.transition()
-    .duration(100)
-    .style('opacity', 0);
-  });
+  var connections = [];
+
+  /* Add the seraches data */
+  addSearchesVisualization(searches)
+
+  /* The origins, destinations and connections are added with this function so it could be reused*/
+  function addSearchesVisualization(data){
+
+    /* The data selection used for further data binding */
+    var selection = g.selectAll('circle')
+    .data(data, function(d){return d.at;})
+    .enter();
+
+    /* The graphical elements visualizing the origins */
+    origins = selection.append('circle')
+    .style('stroke', originStrokeColor)
+    .style('opacity', originOpacity)
+    .style('fill', originColor)
+    .attr('id', function(d, i) { return 'origin' + i; });
+
+    /* The graphical elements visualizing the destinastions */
+    destinations = selection.append('circle')
+    .style('stroke', destinationStrokeColor)
+    .style('opacity', destinationOpacity)
+    .style('fill', destintionColor)
+    .attr('id', function(d, i) { return 'destination' + i; });
+
+    /* The graphical elements visualizing the connections */
+    connections = selection.append('line')
+    .style('stroke', "url(#connectionGradient)")
+    .style('stroke-opacity', connectionStrokeOpacity)
+    .attr('x1', function (d) { return map.latLngToLayerPoint(d.origin).x; })
+    .attr('y1', function (d) { return map.latLngToLayerPoint(d.origin).y; })
+    .attr('x2', function (d) { return map.latLngToLayerPoint(d.destination).x; })
+    .attr('y2', function (d) { return map.latLngToLayerPoint(d.destination).y; })
+    .attr('id', function(d, i) { return 'connection' + i; })
+    .on('mouseover', function(d) {
+      d3.select(this).style('stroke-opacity', 1);
+      div.transition()
+      .duration(100)
+      .style('opacity', .9);
+      div.html(dateTimeFormat(d.at))
+      .style('left', (d3.event.pageX) + 'px')
+      .style('top', (d3.event.pageY - 30) + 'px');
+    })
+    .on('mouseout', function(d) {
+      d3.select(this).style('stroke-opacity', connectionStrokeOpacity);
+      div.transition()
+      .duration(100)
+      .style('opacity', 0);
+    });
+  }
+
+  /* Function clearing all searches visualization elements*/
+  function clearSearchesVisualization(){
+    g.selectAll('*').remove();
+  }
 
   /* The update function taking care of placing and resizing of the overlayed elements*/
   function update() {
@@ -224,7 +242,27 @@ d3.csv('data/searches.csv', function(d) {
   .attr('y', +height/2)
   .attr('height', height/2);
 
-  function brushend() {}
+  /* Function called after the brush-selection is finished*/
+  function brushend() {
+    var filter;
+    // If the user has selected no brush area, share everything.
+    if (brush.empty()) {
+        filter = function() { return true; }
+    } else {
+      // Otherwise, restrict features to only things in the brush extent.
+      filter = function(searches) {
+          return searches.at > +brush.extent()[0] &&
+              searches.at < (+brush.extent()[1]);
+            }
+    };
+    var filtered = searches.filter(filter);
+    /* Clear previous visualization*/
+    clearSearchesVisualization();
+    /* Create new visualization from the filtered data*/
+    addSearchesVisualization(filtered);
+    /* Update the map and the visualization*/
+    update();
+  }
   /* Calling the update function when everything else is set up*/
   update();
 });
