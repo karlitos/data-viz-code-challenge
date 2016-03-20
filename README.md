@@ -63,7 +63,7 @@ It was necessary to use two gradients for coloring the connections, one going to
 
 The map is centered around the mean of difference between the maximal and minimal latitude/longitude. I can imagine than some more "clever" computation could be used for that, to avoid distortion due to the outliers - for example mean of the max/min value lying in the 30%-width interval around the median ...
 
-## Concusion
+## Conclusion
 
 I am quite happy with the result, the performance was overall good on my machine, the time-scale display nicely the difference in the search-frequency during the time, the connection lines gives a feeling about the distances between origin-destination of the searches and the points shows spatial distribution of the search origins/destinations. The selection of different periods allow filtering of the displayed data and still behaves very snappy and performant. The visualization is created fully automatic according to the given data and can be re-used for other data sets.
 
