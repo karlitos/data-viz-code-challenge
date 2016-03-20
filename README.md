@@ -57,5 +57,17 @@ The origin- and destination-points of the searches are displayed as circles of d
 
 The size of the circles and the stroke-width of the lines changes also accordingly to the zoom-level of the map. Different size-computations are used for zoom-level greater/lower zoom-level 12 for better visibility. Of course one could use different size computation methods for every zoom level, this would require some testing to get a feeling how the circles/lines looks like in different zoom-levels and sizes.
 
+The time-scale at the bottom represent all the searches over time. The upper part allow some mouseover-effect displaying tooltip, the lower part allows selection of a region/perdio which changes the displayed connections. The division in two part was necessary, because the selection-brush grabs the mouse event.
+
+It was necessary to use two gradients for coloring the connections, one going top-down and the other for the other direction. Corresponding gradient is used depending whether the connection goes north-south or opposite, so that the start/end color of the gradient corresponds to the origin/destination color.
+
+The map is centered around the mean of difference between the maximal and minimal latitude/longitude. I can imagine than some more "clever" computation could be used for that, to avoid distortion due to the outliers - for example mean of the max/min value lying in the 30%-width interval around the median ...
+
+## Concusion
+
+I am quite happy with the result, the performance was overall good on my machine, the time-scale display nicely the difference in the search-frequency during the time, the connection lines gives a feeling about the distances between origin-destination of the searches and the points shows spatial distribution of the search origins/destinations. The selection of different periods allow filtering of the displayed data and still behaves very snappy and performant. The visualization is created fully automatic according to the given data and can be re-used for other data sets.
+
+It would be probably good idea to put some of the definition in separate configuration file and also rely more on external css for styling of the SVG elements. Other improvement could be a selector allowing displaying/dismissing of the origin/destination circles and the connection lines.
+
 
 [Achieving animated zoom with d3 and Leaflet]: http://www.unknownerror.org/opensource/Leaflet/Leaflet/q/stackoverflow/21216347/achieving-animated-zoom-with-d3-and-leaflet
