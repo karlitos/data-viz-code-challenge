@@ -78,9 +78,9 @@ downTopConnectionGradient.append('stop')
 
 
 // Define the div for the tooltip
-var div = d3.select("body").append("div")
-.attr("class", "tooltip")
-.style("opacity", 0);
+var div = d3.select("body").append('div')
+.attr('class', 'tooltip')
+.style('opacity', 0);
 
 /* Grouping of all the SVG Elements representing the connections*/
 var g = svg.append('g');
@@ -155,9 +155,9 @@ d3.csv('data/searches.csv', function(d) {
     .style('stroke', function(d){
       // Use different gradients depending if the conneciton runs top-down or down-top
       if(d.origin.lat < d.destination.lat){
-        return "url(#downTopConnectionGradient)";
+        return 'url(#downTopConnectionGradient)';
       } else {
-        return "url(#topDownConnectionGradient)";
+        return 'url(#topDownConnectionGradient)';
       };
     })
     .style('stroke-opacity', connectionStrokeOpacity)
@@ -170,12 +170,22 @@ d3.csv('data/searches.csv', function(d) {
       div.html(dateTimeFormat(d.at))
       .style('left', (d3.event.pageX) + 'px')
       .style('top', (d3.event.pageY - 30) + 'px');
+
+      /* Higlight the corresponding timestamp line*/
+      context.selectAll('#' + d3.select(this).attr('id'))
+      .attr('fill', originStrokeColor)
+      .style('opacity', 1);
     })
     .on('mouseout', function(d) {
       d3.select(this).style('stroke-opacity', connectionStrokeOpacity);
       div.transition()
       .duration(100)
       .style('opacity', 0);
+
+      /* Restore the state of the corresponding timestamp line*/
+      context.selectAll('#' + d3.select(this).attr('id'))
+      .attr('fill', originColor)
+      .style('opacity', 0.3);
     });
   }
 
