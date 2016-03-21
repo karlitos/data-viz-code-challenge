@@ -8,6 +8,7 @@ var originColor = d3.rgb(255, 145, 0),
   connectionStrokeOpacity = .2;
 /* Define date format globally since it will be used for parsing and formating on different places */
 var dateTimeFormat = d3.time.format('%Y-%m-%d %H:%M:%S');
+var dateTimeIdFormat = d3.time.format('%Y-%m-%d-%H-%M-%S');
 var initialZoomLevel = 12;
 
 // var layerUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -140,14 +141,14 @@ d3.csv('data/searches.csv', function(d) {
     .style('stroke', originStrokeColor)
     .style('opacity', originOpacity)
     .style('fill', originColor)
-    .attr('id', function(d, i) { return 'origin' + i; });
+    .attr('id', function(d, i) { return 'origin-' + dateTimeIdFormat(d.at); });
 
     /* The graphical elements visualizing the destinastions */
     destinations = selection.append('circle')
     .style('stroke', destinationStrokeColor)
     .style('opacity', destinationOpacity)
     .style('fill', destintionColor)
-    .attr('id', function(d, i) { return 'destination' + i; });
+    .attr('id', function(d, i) { return 'destination-' + dateTimeIdFormat(d.at); });
 
     /* The graphical elements visualizing the connections */
     connections = selection.append('line')
@@ -160,11 +161,7 @@ d3.csv('data/searches.csv', function(d) {
       };
     })
     .style('stroke-opacity', connectionStrokeOpacity)
-    .attr('x1', function (d) { return map.latLngToLayerPoint(d.origin).x; })
-    .attr('y1', function (d) { return map.latLngToLayerPoint(d.origin).y; })
-    .attr('x2', function (d) { return map.latLngToLayerPoint(d.destination).x; })
-    .attr('y2', function (d) { return map.latLngToLayerPoint(d.destination).y; })
-    .attr('id', function(d, i) { return 'connection' + i; })
+    .attr('id', function(d, i) { return 'connection-' + dateTimeIdFormat(d.at); })
     .on('mouseover', function(d) {
       d3.select(this).style('stroke-opacity', 1);
       div.transition()
@@ -256,6 +253,7 @@ d3.csv('data/searches.csv', function(d) {
   .attr('transform', function(d) {
     return 'translate(' + [x(d.at), 0] + ')';
   })
+  .attr('id', function(d, i) { return 'connection-' + dateTimeIdFormat(d.at); })
   .attr('width', 2)
   .attr('height', '100%')
   .attr('opacity', 0.3)
@@ -268,12 +266,18 @@ d3.csv('data/searches.csv', function(d) {
     div.html(dateTimeFormat(d.at))
     .style('left', (d3.event.pageX) + 'px')
     .style('top', (d3.event.pageY - 30) + 'px');
+
+    /* Higlight the corresponding connection line*/
+    g.selectAll('#' + d3.select(this).attr('id')).style('stroke-opacity', 1);
   })
   .on('mouseout', function(d) {
     d3.select(this).attr('fill', originColor).style('opacity', 0.3);
     div.transition()
     .duration(100)
     .style('opacity', 0);
+
+    /* Restore the opacity of the corresponding connection line*/
+    g.selectAll('#' + d3.select(this).attr('id')).style('stroke-opacity', connectionStrokeOpacity);
   });
 
   /* The brush selection area*/

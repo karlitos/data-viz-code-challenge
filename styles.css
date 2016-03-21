@@ -34,3 +34,9 @@ div.tooltip {
   fill-opacity: 1;
   shape-rendering:crispEdges;
   }
+
+#checkBoxDiv {
+  position: absolute;
+  top:0;right:0;
+  height:20px;
+}
